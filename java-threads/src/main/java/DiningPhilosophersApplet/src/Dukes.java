@@ -1,0 +1,4 @@
+public enum Dukes {
+	HUNGRYDUKE, RIGHTSPOONDUKE, BOTHSPOONSDUKE;
+}
+

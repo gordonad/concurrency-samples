@@ -1,0 +1,2430 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <script src="src/main/resources/index_files/tigris.txt" type="text/javascript"></script>
+  <link rel="stylesheet" type="text/css" href="src/main/resources/index_files/netbeans.css">
+  <title>LAB-1108: Java SE 5 Concurrency</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta http-equiv="Content-Style-Type" content="text/css">
+  <meta name="SourceCastVersion" content="2.6.2.4.10">
+  <link rel="shortcut icon" href="http://www.netbeans.org/favicon.ico"
+ type="image/x-icon">
+  <meta name="keywords"
+ content="NetBeans, IDE, Platform, free, open source, developer">
+  <link rel="stylesheet" href="src/main/resources/index_files/netbeans_002.css">
+  <meta name="author" content="Sang Shin">
+  <style type="text/css">
+#search {height:100%;}
+#topmodule {align:right;}
+  </style>
+  <script language="JavaScript" type="text/javascript">
+<!--
+function get_sc_login() {
+  var sclogin = "guest";
+  return (sclogin);
+}
+var username=get_sc_login();
+//-->
+  </script>
+</head>
+<body onload="loginfocus()" class="composite"
+ style="background-image: url(src/main/resources/index_files/beige.jpg);">
+<!-- begin TopTabs --><!-- end TopTabs --><!-- start NavCol --><!-- end NavCol --><!-- Servlet-Specific template --><!-- Show servlet name if it is a servlet -->
+<br>
+<br>
+<h1 style="text-align: center;">Java SE 5 Concurrency<br>
+</h1>
+<div class="articledate" style="margin-left: 0px; text-align: center;"><a
+ href="http://www.javapassion.com/SangShinSchedule.html#Bio">Sang Shin</a>,
+<a href="http://www.javapassion.com/javaintro/">www.javapassion.com/javaintro</a><br>
+<br>
+<img alt="" src="src/main/resources/index_files/sangshin2009.jpg"
+ style="width: 88px; height: 101px;"><br>
+<a href="mailto:sang.shin@sun.com"><i></i></a></div>
+<p style="margin-left: 40px;">The Concurrency Utilities introduced from
+JDK 5 provide a powerful, extensible framework of high-performance
+threading utilities such as thread pools and blocking queues. This
+package frees the programmer from the need to craft these utilities by
+hand, in much the same manner the Collections Framework did for data
+structures. Additionally, these packages provide low-level primitives
+for advanced concurrent programming.&nbsp; <br>
+</p>
+<p style="margin-left: 40px;">This hands-on lab takes you through the
+basics of using Java SE 5
+concurrency.<br>
+</p>
+<br>
+<p></p>
+<p align="center"><b>Expected duration: 150 minutes</b></p>
+<div class="indent"><br>
+<h3 class="tutorial"><a name="Software_Needed"></a>Software Needed</h3>
+<br>
+Before you begin, you need to install required software (JDK and
+NetBeans IDE) on your
+computer as <a
+ href="http://www.javapassion.com/handsonlabs/javaprogenv/index.html#Exercise_0">described
+here</a>.&nbsp; Also download and unzip the hands-on lab file mentioned
+below.
+<ul>
+  <li>1108_javase5concurrency.zip (<a
+ href="http://www.javapassion.com/handsonlabs/1108_javase5concurrency.zip">download</a>)</li>
+  <ul>
+    <li>It contains this document and the lab contents<br>
+    </li>
+    <li>Download it and unzip in a directory of your choice</li>
+  </ul>
+</ul>
+<br>
+<h3 class="tutorial"><a name="Change_Log"></a>Change Log<br>
+</h3>
+<ul>
+  <li>March 12th, 2007: Created</li>
+  <li>June 11th, 2007: Homework is added</li>
+  <li>Jan. 10th, 2009: NetBeans 6.5 is used</li>
+</ul>
+<br>
+<h3 class="tutorial"><a name="Tutorial_Exercises"></a>Lab Exercises</h3>
+<ul>
+  <li><a href="#Exercise_1">Exercise 1: ThreadPool (30
+minutes)</a><br>
+  </li>
+  <li><a href="#Exercise_2">Exercise 2: Executors
+(30 minutes)</a><br>
+  </li>
+  <li><a href="#Exercise_3">Exercise 3: Callable and Future
+(30 minutes)</a></li>
+  <li><a href="#Exercise_4">Exercise 4: Semaphore(30 minutes)</a></li>
+  <li><a href="#Exercise_5">Exercise 5: Blocking queue (30 minutes)</a></li>
+  <li><a href="#Homework">Homework Exercise (for people who
+are taking Sang Shin's "Java Programming online course")</a></li>
+</ul>
+<br>
+<ul>
+  <ul>
+  </ul>
+</ul>
+</div>
+<!-- ===================================================================================== -->
+<h2><a name="Exercise_1"></a>Exercise 1: ThreadPoolExecutor<br>
+</h2>
+<div style="margin-left: 40px;">
+<br>
+In this exercise, you will learn how to create a pool of threads using
+the <span style="font-weight: bold;">ThreadPoolExecutor </span>class.
+You also will learn how these pool
+of threads are used to execute tasks. <br>
+<ol>
+  <li><a href="#1.1">Build and run a server that receives connection
+request (using ThreadPoolExecutor)</a></li>
+  <li><a href="#1.2">Build and run two instances of clients</a></li>
+</ol>
+</div>
+<br>
+<h3 style="margin-left: 40px;" class="tutorial"><a name="1.1"></a>(1.1)
+Build and run a server that receives connection request (using
+ThreadPoolExecutor)<br>
+</h3>
+<div style="margin-left: 40px;"><br>
+0. Start NetBeans IDE if you have not done so yet.<br>
+1. Create a new NetBeans project<br>
+<ul>
+  <li>Select <span style="font-weight: bold;">File</span>-&gt;<span
+ style="font-weight: bold;">New Project (Ctrl+Shift+N)</span>. The <span
+ style="font-weight: bold;">New Project</span> dialog box appears.</li>
+  <li>Under <span style="font-weight: bold;">Choose Project</span>
+pane,
+select <span style="font-weight: bold;">General </span>under <span
+ style="font-weight: bold;">Categories </span>and <span
+ style="font-weight: bold;">Java Application</span> under <span
+ style="font-weight: bold;">Projects</span>. <br>
+  </li>
+  <li>Click <span style="font-weight: bold;">Next</span>.</li>
+</ul>
+<ul>
+  <li>Under <span style="font-weight: bold;">Name and Location</span>
+pane, for the <span style="font-weight: bold;">Project Name</span>
+field, type in <span style="font-weight: bold;"><span
+ style="color: rgb(51, 51, 255);">ServerUsingThreadPoolExecutor</span> </span>as
+project name.</li>
+  <li>For <span style="font-weight: bold;">Create Main Class</span>
+field, type in <span style="font-weight: bold;"><span
+ style="color: rgb(51, 51, 255);">ServerUsingThreadPoolExecutor</span></span>.&nbsp;
+(Figure-1.10 below)<br>
+  </li>
+  <li>Click <span style="font-weight: bold;">Finish</span>.</li>
+</ul>
+<img alt="" src="src/main/resources/index_files/1_concurrency5.png"
+ style="width: 729px; height: 505px;"><br>
+Figure-1.10: Create a new project<br>
+<ul>
+  <li>Observe that <span style="font-weight: bold;">ServerUsingThreadPoolExecutor
+    </span>project
+appears and IDE generated <span style="font-weight: bold;">ServerUsingThreadPoolExecutor.java</span>
+is displayed in the source editor window of NetBeans IDE.</li>
+</ul>
+2. Modify the IDE generated <span style="font-weight: bold;">ServerUsingThreadPoolExecutor.java
+</span>as shown in Code-1.11 below.&nbsp; Study the code by paying
+special attention to the bold fonted parts.&nbsp; <br>
+<br>
+This class acts as a listener on an IP port and echo characters sent to
+it when a connection is made.&nbsp; This is similar in functionality to
+a web server type application.&nbsp; Since we want to be able to handle
+lots of short living connections simultaneously, we would create a
+separate thread of execution for each connection.&nbsp; Since thread
+creation is a costly operation to the JVM, the best way to achieve this
+is to create and use a pool of threads.&nbsp; A thread in this pool
+then can be re-used by a new connection when a previous connection is
+done with it. <br>
+<br>
+For this example, we use an implementation of the Executor interface,
+ThreadPoolExecutor.&nbsp; To create a new instance of this, we must
+also first create a Queue to be used for the pool, which in this
+example is an ArrayBlockingQueue which provides a fixed sized, queue
+which is protected to ensure multiple threads can add items without
+contention problems.<br>
+<br>
+<table style="width: 100%; text-align: left;" border="1" cellpadding="2"
+ cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">import java.net.*;<br>
+import java.io.*;<br>
+import java.util.concurrent.*;<br>
+      <br>
+public class ServerUsingThreadPoolExecutor {<br>
+&nbsp;&nbsp;&nbsp; <br>
+&nbsp;&nbsp;&nbsp; private final static int MAX_THREADS = 2;<br>
+&nbsp;&nbsp;&nbsp; <br>
+&nbsp;&nbsp;&nbsp; private final ServerSocket serverSocket;<br>
+&nbsp;&nbsp;&nbsp; private final ThreadPoolExecutor pool;<br>
+&nbsp;&nbsp;&nbsp; private final ArrayBlockingQueue&lt;Runnable&gt;
+workQueue;<br>
+&nbsp;&nbsp;&nbsp; <br>
+&nbsp;&nbsp;&nbsp; /**<br>
+&nbsp;&nbsp;&nbsp;&nbsp; *&nbsp; Constructor<br>
+&nbsp;&nbsp;&nbsp;&nbsp; **/<br>
+&nbsp;&nbsp;&nbsp; public<span style="color: rgb(51, 51, 255);"> </span><span
+ style="font-weight: bold; color: rgb(51, 51, 255);">ServerUsingThreadPoolExecutor</span>(int
+port, int
+poolSize) throws IOException {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /*&nbsp; Create a new
+ServerSocket to listen for incoming connections&nbsp; */<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; serverSocket = new
+ServerSocket(port);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <br>
+&nbsp;<span style="font-weight: bold;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+/*&nbsp; In order to create a pool of threads, we must first have a
+queue</span><br style="font-weight: bold;">
+      <span style="font-weight: bold;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+*&nbsp; that will be used to hold the work tasks before they are
+executed</span><br style="font-weight: bold;">
+      <span style="font-weight: bold;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+*&nbsp; For this example we use a ArrayBlockingQueue that can hold the</span><br
+ style="font-weight: bold;">
+      <span style="font-weight: bold;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+*&nbsp; same number of tasks as we have maximum threads</span><br
+ style="font-weight: bold;">
+      <span style="font-weight: bold;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+*/</span><br style="font-weight: bold;">
+      <span style="font-weight: bold;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+workQueue = new ArrayBlockingQueue&lt;Runnable&gt;(MAX_THREADS);</span><br
+ style="font-weight: bold;">
+      <span style="font-weight: bold;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      </span><br style="font-weight: bold;">
+      <span style="font-weight: bold;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+/*&nbsp; Now create a ThreadPool.&nbsp; The initial and maximum number
+of</span><br style="font-weight: bold;">
+      <span style="font-weight: bold;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+*&nbsp; threads are the same in this example.&nbsp; Please note that the</span><br
+ style="font-weight: bold;">
+      <span style="font-weight: bold;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+*&nbsp; MAX_THREADS is set to 2.</span><br style="font-weight: bold;">
+      <span style="font-weight: bold;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+*/</span><br style="font-weight: bold;">
+      <span style="font-weight: bold;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+pool = new ThreadPoolExecutor(MAX_THREADS, MAX_THREADS,</span><br
+ style="font-weight: bold;">
+      <span style="font-weight: bold;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+60, TimeUnit.SECONDS, workQueue);</span><br>
+&nbsp;&nbsp;&nbsp; }<br>
+&nbsp;&nbsp;&nbsp; <br>
+&nbsp;&nbsp;&nbsp; /**<br>
+&nbsp;&nbsp;&nbsp;&nbsp; *&nbsp; Service requests<br>
+&nbsp;&nbsp;&nbsp;&nbsp; **/<br>
+&nbsp;&nbsp;&nbsp; public void <span style="font-weight: bold;">serviceRequests</span>()
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; int count = 1;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; int qLength = 0;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; try {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; for
+(;;) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+if ((qLength = workQueue.size()) &gt; 0)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+System.out.println("Queue length is " + qLength);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+ style="font-weight: bold;"> pool.execute(new
+ConnectionHandler(serverSocket.accept(), count++));</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; } catch (IOException ioe) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+System.out.println("IO Error in ConnectionHandler: " +
+ioe.getMessage());<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+pool.shutdown();<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }<br>
+&nbsp;&nbsp;&nbsp; }<br>
+&nbsp;&nbsp;&nbsp; <br>
+&nbsp;&nbsp;&nbsp; /**<br>
+&nbsp;&nbsp;&nbsp;&nbsp; *&nbsp; Main entry point<br>
+&nbsp;&nbsp;&nbsp;&nbsp; *<br>
+&nbsp;&nbsp;&nbsp;&nbsp; * @param args Command line arguments<br>
+&nbsp;&nbsp;&nbsp;&nbsp; **/<br>
+&nbsp;&nbsp;&nbsp; public static void main(String[] args) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+System.out.println("Listening for connections...");<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ServerUsingThreadPoolExecutor ce = null;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; try {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+ style="font-weight: bold;"> ce = <span
+ style="color: rgb(51, 51, 255);">new
+ServerUsingThreadPoolExecutor</span>(8100, 4);</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /*<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+* Serve incoming connection request until interrupted.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+*/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+ style="font-weight: bold;">&nbsp; ce.serviceRequests();</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; } catch (IOException ioe) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+System.out.println("IO Error creating listener: " + ioe.getMessage());<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }<br>
+&nbsp;&nbsp;&nbsp; }<br>
+}<br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+Code-1.11: ServerUsingThreadPoolExecutor.java<br>
+<br>
+3. Write <span style="font-weight: bold;">ConnectionHandler.java</span>
+as shown in Code-1.12 below.<br>
+<br>
+<img alt="" src="src/main/resources/index_files/1_concurrency8.png"
+ style="width: 729px; height: 505px;"><br>
+<br>
+<table style="width: 100%; text-align: left;" border="1" cellpadding="2"
+ cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;"><span style="font-weight: bold;"></span>import
+java.io.*;<br>
+import java.net.*;<br>
+import java.util.concurrent.*;<br>
+      <br>
+public class ConnectionHandler implements Runnable {<br>
+&nbsp;&nbsp;&nbsp; private final Socket socket;<br>
+&nbsp;&nbsp;&nbsp; private final int connectionID;<br>
+&nbsp;&nbsp;&nbsp; <br>
+&nbsp;&nbsp;&nbsp; /**<br>
+&nbsp;&nbsp;&nbsp;&nbsp; *&nbsp; Constructor<br>
+&nbsp;&nbsp;&nbsp;&nbsp; *<br>
+&nbsp;&nbsp;&nbsp;&nbsp; * @param socket The socket on which incoming
+data will arrive<br>
+&nbsp;&nbsp;&nbsp;&nbsp; **/<br>
+&nbsp;&nbsp;&nbsp; public ConnectionHandler(Socket socket, int
+connectionID) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; this.socket = socket;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; this.connectionID =
+connectionID;<br>
+&nbsp;&nbsp;&nbsp; }<br>
+&nbsp;&nbsp;&nbsp; <br>
+&nbsp;&nbsp;&nbsp; /**<br>
+&nbsp;&nbsp;&nbsp;&nbsp; *&nbsp; run method to do the work of the
+handler<br>
+&nbsp;&nbsp;&nbsp;&nbsp; **/<br>
+&nbsp;&nbsp;&nbsp; public void run() {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+System.out.println("Connection " + connectionID + ", started");<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; try {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+InputStream is = socket.getInputStream();<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+//&nbsp; Loop to do something with the socket here<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+while (true) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+byte[] inData = new byte[100];<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+/*&nbsp; If the number of bytes read is less than zero then the
+connection<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+*&nbsp; has been terminated so we end the thread<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+*/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+if (is.read(inData) &lt; 0)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+break;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+System.out.println("[" + connectionID + "]: " + new String(inData));<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; } catch (IOException ioe) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; //
+Ignore<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+System.out.println("Connection " + connectionID + ", ended");<br>
+&nbsp;&nbsp;&nbsp; }<br>
+}<br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+Code-1.12: ConnectionHandler.java<br>
+<br>
+4. Build and run the project<br>
+<ul>
+  <li>Right click <span style="font-weight: bold;">ServerUsingThreadPoolExecutor
+    </span>project
+and select <span style="font-weight: bold;">Run</span>. </li>
+  <li>Observe the result in the <span style="font-weight: bold;">Output
+    </span>window.
+(Figure-1.13 below)&nbsp; The server is waiting for connection request
+from clients.<br>
+  </li>
+</ul>
+<table style="width: 100%; text-align: left;" border="1" cellpadding="2"
+ cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;"><span
+ style="font-family: helvetica,arial,sans-serif;"> Listening for
+connections...</span> </td>
+    </tr>
+  </tbody>
+</table>
+Figure-1.13: Result of running ServerUsingThreadPoolExecutor application<br>
+<br>
+<img alt="" src="src/main/resources/index_files/1_concurrency9.png"
+ style="width: 858px; height: 744px;"><br>
+<br>
+<br>
+<hr style="width: 100%; height: 2px;"><span
+ style="color: rgb(255, 0, 0);">Trouble-shooting</span>:&nbsp; If you
+see the following error condition, it is highly likely due to the fact
+that you have not terminate the server process that uses the same port
+- port 8100 in this example.<br>
+<br>
+<table style="width: 100%; text-align: left;" border="1" cellpadding="2"
+ cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">IO Error creating listener:
+Address already in use: JVM_Bind<br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+<span style="color: rgb(51, 51, 255);">Solution</span>: Terminate the
+previously started process that uses the same port.&nbsp; Click Runtime
+tab window and expand Processes node and then right click the process
+and select Terminate Process.&nbsp; Or as a brutal method, exiting the
+NetBeans IDE will do it as well.&nbsp; Also you can use the different
+port
+number other than 8100.&nbsp; In this case, you will also need to
+change the hard-coded port number of the client.<br>
+<hr style="width: 100%; height: 2px;"><br>
+<span style="color: rgb(51, 51, 255); font-weight: bold;">Solution</span>:
+This exercise up to this point is provided as a ready-to-open-and-run
+NetBeans project as part of hands-on lab zip file. You can find it as <span
+ style="font-weight: bold;">&lt;LAB_UNZIPPED_DIRECTORY&gt;/javase5concurrency/samples/</span><span
+ style="font-weight: bold;">ServerUsingThreadPoolExecutor</span><span
+ style="font-weight: bold;">.&nbsp;
+</span>You can just open it and run it.&nbsp; <br>
+</div>
+<div style="margin-left: 40px;"><br>
+<ul>
+</ul>
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp; <a
+ href="http://www.javapassion.com/handsonlabs/javase5concurrency/index.html#Exercise_1">return
+to top of the
+exercise</a><br>
+<br>
+</div>
+<h3 style="margin-left: 40px;" class="tutorial"><a name="1.2"></a>(1.2)
+Build and run two instances of ConnectionClient<br>
+</h3>
+<div style="margin-left: 40px;"><br>
+1. Create a new NetBeans project<br>
+<ul>
+  <li>Select <span style="font-weight: bold;">File</span>-&gt;<span
+ style="font-weight: bold;">New Project (Ctrl+Shift+N)</span>. The <span
+ style="font-weight: bold;">New Project</span> dialog box appears.</li>
+  <li>Under <span style="font-weight: bold;">Choose Project</span>
+pane,
+select <span style="font-weight: bold;">General </span>under <span
+ style="font-weight: bold;">Categories </span>and <span
+ style="font-weight: bold;">Java Application</span> under <span
+ style="font-weight: bold;">Projects</span>. <br>
+  </li>
+  <li>Click <span style="font-weight: bold;">Next</span>.<br>
+    <br>
+  </li>
+  <li>Under <span style="font-weight: bold;">Name and Location</span>
+pane, for the <span style="font-weight: bold;">Project Name</span>
+field, type in <span style="font-weight: bold;"><span
+ style="color: rgb(51, 51, 255);">ConnectionClient</span></span><span
+ style="font-weight: bold;"> </span>as
+project name.</li>
+  <li>For <span style="font-weight: bold;">Create Main Class</span>
+field, type in <span style="font-weight: bold;"><span
+ style="color: rgb(51, 51, 255);">ConnectionClient</span></span>.&nbsp;
+    <br>
+  </li>
+  <li>Click <span style="font-weight: bold;">Finish</span>.</li>
+</ul>
+<img alt="" src="src/main/resources/index_files/1_concurrency7.png"
+ style="width: 729px; height: 505px;"><br>
+<ul>
+  <li>Observe that <span style="font-weight: bold;">ConnectionClient </span>project
+appears and IDE generated <span style="font-weight: bold;">ConnectionClient.java</span>
+is displayed in the source editor window of NetBeans IDE.</li>
+</ul>
+2. Modify the IDE generated <span style="font-weight: bold;">ConnectionClient.java
+</span>as shown in Code-1.21 below.&nbsp; Study the code by paying
+special attention to the bold fonted parts.<br>
+<br>
+<table style="width: 100%; text-align: left;" border="1" cellpadding="2"
+ cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">import java.net.*;<br>
+import java.io.*;<br>
+import java.util.concurrent.*;<br>
+      <br>
+      <span style="font-weight: bold;">/**</span><br
+ style="font-weight: bold;">
+      <span style="font-weight: bold;">&nbsp;*&nbsp; ConnectionClient
+pass characters from the keyboard to a socket.&nbsp;
+Simplified version of</span><br style="font-weight: bold;">
+      <span style="font-weight: bold;">&nbsp;*&nbsp; telnet</span><br
+ style="font-weight: bold;">
+      <span style="font-weight: bold;">&nbsp;*/</span><br>
+public class ConnectionClient {<br>
+&nbsp;&nbsp;&nbsp; <br>
+&nbsp;&nbsp;&nbsp; /**<br>
+&nbsp;&nbsp;&nbsp;&nbsp; *&nbsp; Main entry point<br>
+&nbsp;&nbsp;&nbsp;&nbsp; *<br>
+&nbsp;&nbsp;&nbsp;&nbsp; * @param args Command line arguments<br>
+&nbsp;&nbsp;&nbsp;&nbsp; **/<br>
+&nbsp;&nbsp;&nbsp; public static void main(String[] args) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; String host = null;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; int port = 0;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; if (args.length &lt; 2) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; host
+= "127.0.0.1";<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; port
+= 8100;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; OutputStream os = null;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; try {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+ style="font-weight: bold;"> // The Socket() call returns only when the
+connection</span><br style="font-weight: bold;">
+      <span style="font-weight: bold;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+// request from this client is accepted by the server.</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+ style="font-weight: bold;"> Socket s = new Socket(host, port);</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; os =
+s.getOutputStream();<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+System.out.println("Connection established to server. Type characters
+and press &lt;ENTER&gt; to send");<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+System.out.println("Type EXIT and press &lt;RETURN&gt; to exit");<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+/*&nbsp; Read data from the standard input and send it to the remote
+socket&nbsp; */<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+while (true) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+byte[] inData = new byte[100];<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+System.in.read(inData);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+String inString = new String(inData);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+if (inString.substring(0, 4).compareTo("EXIT") == 0)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+System.exit(1);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+os.write(inData);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; } catch (Exception e) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+System.out.println("Failed to connect to remote host: " +<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+e.getMessage());<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }<br>
+&nbsp;&nbsp;&nbsp; }<br>
+}<br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+Code-1.21: ConnectionClient.java<br>
+<br>
+3. Build and run the project<br>
+<ul>
+  <li>Right click <span style="font-weight: bold;">ConnectionClient </span>project
+and select <span style="font-weight: bold;">Run</span>. </li>
+  <li>Observe the result in the <span style="font-weight: bold;">Output
+    </span>window.
+(Figure-1.23 below)</li>
+</ul>
+<table style="width: 100%; text-align: left;" border="1" cellpadding="2"
+ cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">Connection established to
+server. Type characters and press &lt;ENTER&gt; to send<br>
+Type EXIT and press &lt;RETURN&gt; to exit<br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+Figure-1.23: Result of running ConnectionClient application<br>
+<br>
+<img alt="" src="src/main/resources/index_files/1_concurrency10.png"
+ style="width: 858px; height: 744px;"><br>
+<ul>
+  <li>Enter some value into the <span style="font-weight: bold;">Input
+    </span>field and press <span style="font-weight: bold;">Enter </span>key.
+(Figure-1.25 below)&nbsp; In this example below, "<span
+ style="font-weight: bold;">This is a message from
+ConnectionClient instance 1</span>" is entered. </li>
+</ul>
+<img alt="" src="src/main/resources/index_files/1_concurrency1.png"
+ style="width: 858px; height: 744px;"><br>
+Figure-1.25: Enter a message <br>
+<br>
+<hr style="width: 100%; height: 2px;"><span
+ style="color: rgb(255, 0, 0);">Trouble-shooting</span>:&nbsp; If you
+see the following error condition, it is highly likely due to the fact
+that you have not started the server or firewall blocks the connection
+request.<br>
+<br>
+<table style="width: 100%; text-align: left;" border="1" cellpadding="2"
+ cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">Failed to connect to remote
+host: Connection refused: connect<br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+<span style="color: rgb(51, 51, 255);">Solution</span>: Start the
+server.&nbsp; Also disable firewall on your computer,<br>
+<hr style="width: 100%; height: 2px;"><br>
+4. Observe the output on the server side.<br>
+<ul>
+  <li>Click the <span style="font-weight: bold;">ServerUsingThreadPoolExecutor
+    </span>tab window to see the output of the <span
+ style="font-weight: bold;">ServerUsingThreadPoolExecutor</span>.<br>
+  </li>
+  <li>Observe that the message it received from <span
+ style="font-weight: bold;">ConnectionClient </span>is displayed.
+(Figure-1.26 below)<br>
+  </li>
+</ul>
+<img alt="" src="src/main/resources/index_files/1_concurrency2.png"
+ style="width: 858px; height: 744px;"><br>
+Figure-1.26: Connection request from ConnectionClient is received and
+message from ConnectionClient is displayed<br>
+<br>
+5. Build and run another instance of <span style="font-weight: bold;">ConnectionClient</span>.<br>
+<ul>
+  <li>Right click <span style="font-weight: bold;">ConnectionClient </span>project
+and select <span style="font-weight: bold;">Run</span>.&nbsp;
+This will start the 2nd instance of the ConnectionClient.</li>
+</ul>
+<img alt="" src="src/main/resources/index_files/1_concurrency11.png"
+ style="width: 858px; height: 744px;"><br>
+<ul>
+  <li>Observe the result in the <span style="font-weight: bold;">Output
+    </span>window has a <span style="font-weight: bold;">ConnectionClient
+(run) #2</span> tab.
+(Figure-1.23 below)</li>
+</ul>
+<table style="width: 100%; text-align: left;" border="1" cellpadding="2"
+ cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">Connection established to
+server. Type characters and press &lt;ENTER&gt; to send<br>
+Type EXIT and press &lt;RETURN&gt; to exit<br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+Figure-1.23: Result of running ConnectionClient application<br>
+<br>
+<img alt="" src="src/main/resources/index_files/1_concurrency12.png"
+ style="width: 858px; height: 744px;"><br>
+<ul>
+  <li>Enter some value and press Enter key.
+(Figure-1.27 below)&nbsp; In this example, "<span
+ style="font-weight: bold;">Message from the 2nd
+instance of ConnectionClient by Sang Shin</span>" is entered.<br>
+  </li>
+</ul>
+<img alt="" src="src/main/resources/index_files/1_concurrency3.png"
+ style="width: 858px; height: 744px;"><br>
+Figure-1.27: Enter data from the 2nd instance of ConnectionClient<br>
+<br>
+6. Observe the output on the server side.<br>
+<ul>
+  <li>Click the <span style="font-weight: bold;">ServerUsingThreadPoolExecutor
+    </span>tab window to see the output of the <span
+ style="font-weight: bold;">ServerUsingThreadPoolExecutor</span>.<br>
+  </li>
+  <li>Observe that the message it received fromthe 2nd instance <span
+ style="font-weight: bold;">ConnectionClient </span>is displayed.
+(Figure-1.28 below)</li>
+</ul>
+<img alt="" src="src/main/resources/index_files/1_concurrency4.png"
+ style="width: 858px; height: 744px;"><br>
+Figure-1.28: Connection request from ConnectionClient is received and
+message from ConnectionClient is displayed<br>
+<br>
+7. Close NetBeans in order to terminate the <span
+ style="font-weight: bold;">ServerUsingThreadPoolExecutor </span>and <span
+ style="font-weight: bold;">ConnectionClient </span>processes for
+subsequent exercises.&nbsp; If you skip this, you will get <span
+ style="font-weight: bold;">IO Error creating listener: Address already
+in use: JVM_Bind</span> later on when you run a server program that
+shares the same port number.<br>
+<br>
+<img alt="" src="src/main/resources/index_files/1_concurrency6.png"
+ style="width: 420px; height: 244px;"><br>
+Figure-1.29: Exit NetBeans IDE to terminate the processes<br>
+<br>
+<span style="color: rgb(51, 51, 255); font-weight: bold;">Solution</span>:
+This exercise up to this point is provided as a ready-to-open-and-run
+NetBeans project as part of hands-on lab zip file. You can find it as <span
+ style="font-weight: bold;">&lt;LAB_UNZIPPED_DIRECTORY&gt;/javase5concurrency/samples/</span><span
+ style="font-weight: bold;">ConnectionClient</span><span
+ style="font-weight: bold;">.&nbsp;
+</span>You can just open it and run it.&nbsp; <br>
+<br>
+<span style="color: rgb(51, 51, 255); font-weight: bold;"></span>&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp; <a
+ href="http://www.javapassion.com/handsonlabs/javase5concurrency/index.html#Exercise_1">return
+to top of the
+exercise</a><br>
+</div>
+<br>
+<br>
+<h3 style="margin-left: 40px;" class="tutorial">Summary<br>
+</h3>
+<div style="margin-left: 40px;"><br>
+In this exercise, you learned how to create a pool of threads using
+the ThreadPoolExecutor class. You also will learn how these pool
+of threads are used to execute tasks.&nbsp;
+</div>
+<div style="margin-left: 40px;"></div>
+<div style="margin-left: 40px;">
+<div style="margin-left: 40px;"><br>
+</div>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<a href="#Tutorial_Exercises">return to the top</a><br>
+</div>
+<br>
+<br>
+<h2><a name="Exercise_2"></a>Exercise 2: Implement Runnable interface<br>
+</h2>
+<p style="margin-left: 40px;"> In the previous exercise, you created
+your own instance of ThreadPoolExecutor.&nbsp; There is a utility
+method in the Executors class that can be used to get a
+ThreadPoolExecutor more easily than by instantiating your own.&nbsp; <br>
+</p>
+<p style="margin-left: 40px;">In this exercise, you are going to
+rewrite the <span style="font-weight: bold;">ServerUsingThreadPoolExecutor</span>
+code to use the <span style="font-weight: bold;">Executors </span>utility
+class.&nbsp; We will rename the file to <span
+ style="font-weight: bold;">ServerUsingExecutors</span>.<br>
+</p>
+<ol style="margin-left: 40px;">
+  <li><a href="#2.1">Build and run a server that receives conenction
+requests (using Executors)</a></li>
+  <li><a href="#2.2">Build and run clients</a><br>
+  </li>
+</ol>
+<br>
+<h3 style="margin-left: 40px;" class="tutorial"><a name="2.1"></a>(2.1)
+Build and run a server that receives connection requests (using
+Executors)<br>
+</h3>
+<div style="margin-left: 40px;"><br>
+1. Create a new NetBeans project<br>
+<ul>
+  <li>Select <span style="font-weight: bold;">File</span>-&gt;<span
+ style="font-weight: bold;">New Project (Ctrl+Shift+N)</span>. The <span
+ style="font-weight: bold;">New Project</span> dialog box appears.</li>
+  <li>Under <span style="font-weight: bold;">Choose Project</span>
+pane,
+select <span style="font-weight: bold;">General </span>under <span
+ style="font-weight: bold;">Categories </span>and <span
+ style="font-weight: bold;">Java Application</span> under <span
+ style="font-weight: bold;">Projects</span>. <br>
+  </li>
+  <li>Click <span style="font-weight: bold;">Next</span>.</li>
+</ul>
+<ul>
+  <li>Under <span style="font-weight: bold;">Name and Location</span>
+pane, for the <span style="font-weight: bold;">Project Name</span>
+field, type in <span style="font-weight: bold;"><span
+ style="color: rgb(51, 51, 255);">ServerUsingExecutors</span> </span>as
+project name.</li>
+  <li>For <span style="font-weight: bold;">Create Main Class</span>
+field, type in <span style="font-weight: bold;"><span
+ style="color: rgb(51, 51, 255);">ServerUsingExecutors</span></span>.&nbsp;
+    <br>
+  </li>
+  <li>Click <span style="font-weight: bold;">Finish</span>.</li>
+</ul>
+<img alt="" src="src/main/resources/index_files/1_concurrency13.png"
+ style="width: 729px; height: 505px;"><br>
+<ul>
+  <li>Observe that <span style="font-weight: bold;">ServerUsingExecutors
+    </span>project
+appears and IDE generated <span style="font-weight: bold;">ServerUsingExecutors.java</span>
+is displayed in the source editor window of NetBeans IDE.</li>
+</ul>
+2. Modify the IDE generated <span style="font-weight: bold;">ServerUsingExecutors.java
+</span>as shown in Code-2.11 below.&nbsp; Study the code by paying
+special attention to the bold fonted parts.&nbsp; <br>
+<br>
+<table style="width: 100%; text-align: left;" border="1" cellpadding="2"
+ cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">import java.net.*;<br>
+import java.io.*;<br>
+import java.util.concurrent.*;<br>
+      <br>
+public class ServerUsingExecutors {<br>
+&nbsp;&nbsp;&nbsp; private final static int MAX_THREADS = 3;<br>
+&nbsp;&nbsp;&nbsp; <br>
+&nbsp;&nbsp;&nbsp; private final ServerSocket serverSocket;<br>
+&nbsp;&nbsp;&nbsp; private final ExecutorService pool;<br>
+&nbsp;&nbsp;&nbsp; <br>
+&nbsp;&nbsp;&nbsp; public ServerUsingExecutors(int port, int poolSize)
+throws IOException {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /*&nbsp; Create a new
+ServerSocket to listen for incoming connections&nbsp; */<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; serverSocket = new
+ServerSocket(port);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="font-weight: bold;">&nbsp;
+/*&nbsp; Use the Exectors factory method to get a ThreadPool&nbsp; */</span><br
+ style="font-weight: bold;">
+      <span style="font-weight: bold;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+pool = Executors.newFixedThreadPool(MAX_THREADS);</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <br>
+&nbsp;&nbsp;&nbsp; }<br>
+&nbsp;&nbsp;&nbsp; <br>
+&nbsp;&nbsp;&nbsp; /**<br>
+&nbsp;&nbsp;&nbsp;&nbsp; *&nbsp; Service requests<br>
+&nbsp;&nbsp;&nbsp;&nbsp; **/<br>
+&nbsp;&nbsp;&nbsp; public void serviceRequests() {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; int count = 1;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; int qLength = 0;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; try {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; for
+(;;) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      <span style="font-weight: bold;">pool.execute(new
+ConnectionHandler(serverSocket.accept(), count++));</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; } catch (IOException ioe) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+System.out.println("IO Error in ConnectionHandler: " +
+ioe.getMessage());<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+pool.shutdown();<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <br>
+&nbsp;&nbsp;&nbsp; }<br>
+&nbsp;&nbsp;&nbsp; <br>
+&nbsp;&nbsp;&nbsp; public static void main(String[] args) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+System.out.println("Listening for connections...");<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ServerUsingExecutors ce =
+null;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; try {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+ style="font-weight: bold;">&nbsp; ce = new ServerUsingExecutors(8100,
+4);</span><br style="font-weight: bold;">
+      <span style="font-weight: bold;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ce.serviceRequests();</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; } catch (IOException ioe) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+System.out.println("IO Error creating listener: " + ioe.getMessage());<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }<br>
+&nbsp;&nbsp;&nbsp; }<br>
+}<br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+Code-2.11: ServerUsingExecutors.java<br>
+<br>
+3. Write <span style="font-weight: bold;">ConnectionHandler.java </span>as
+shown in Code-2.12 below.&nbsp; This is the same code you've created in
+the Exercise 1 above.<br>
+<br>
+<table style="width: 100%; text-align: left;" border="1" cellpadding="2"
+ cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;"><span style="font-weight: bold;"></span>import
+java.io.*;<br>
+import java.net.*;<br>
+import java.util.concurrent.*;<br>
+      <br>
+public class ConnectionHandler implements Runnable {<br>
+&nbsp;&nbsp;&nbsp; private final Socket socket;<br>
+&nbsp;&nbsp;&nbsp; private final int connectionID;<br>
+&nbsp;&nbsp;&nbsp; <br>
+&nbsp;&nbsp;&nbsp; /**<br>
+&nbsp;&nbsp;&nbsp;&nbsp; *&nbsp; Constructor<br>
+&nbsp;&nbsp;&nbsp;&nbsp; *<br>
+&nbsp;&nbsp;&nbsp;&nbsp; * @param socket The socket on which incoming
+data will arrive<br>
+&nbsp;&nbsp;&nbsp;&nbsp; **/<br>
+&nbsp;&nbsp;&nbsp; public ConnectionHandler(Socket socket, int
+connectionID) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; this.socket = socket;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; this.connectionID =
+connectionID;<br>
+&nbsp;&nbsp;&nbsp; }<br>
+&nbsp;&nbsp;&nbsp; <br>
+&nbsp;&nbsp;&nbsp; /**<br>
+&nbsp;&nbsp;&nbsp;&nbsp; *&nbsp; run method to do the work of the
+handler<br>
+&nbsp;&nbsp;&nbsp;&nbsp; **/<br>
+&nbsp;&nbsp;&nbsp; public void run() {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+System.out.println("Connection " + connectionID + ", started");<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; try {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+InputStream is = socket.getInputStream();<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+//&nbsp; Loop to do something with the socket here<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+while (true) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+byte[] inData = new byte[100];<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+/*&nbsp; If the number of bytes read is less than zero then the
+connection<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+*&nbsp; has been terminated so we end the thread<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+*/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+if (is.read(inData) &lt; 0)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+break;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+System.out.println("[" + connectionID + "]: " + new String(inData));<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; } catch (IOException ioe) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; //
+Ignore<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+System.out.println("Connection " + connectionID + ", ended");<br>
+&nbsp;&nbsp;&nbsp; }<br>
+}<br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+Code-2.12: PrintNameRunnable.java<br>
+<br>
+4. Build and run the project<br>
+<ul>
+  <li>Right click <span style="font-weight: bold;">ServerUsingExecutors
+    </span>project
+and select <span style="font-weight: bold;">Run</span>. </li>
+  <li>Observe the result in the <span style="font-weight: bold;">Output
+    </span>window.
+(Figure-1.13 below)&nbsp; The server is waiting for connection request
+from clients.<br>
+  </li>
+</ul>
+<table style="width: 100%; text-align: left;" border="1" cellpadding="2"
+ cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;"><span
+ style="font-family: helvetica,arial,sans-serif;"> Listening for
+connections...</span> </td>
+    </tr>
+  </tbody>
+</table>
+Figure-1.13: Result of running ServerUsingExecutors application<br>
+<br>
+<br>
+<hr style="width: 100%; height: 2px;"><span
+ style="color: rgb(255, 0, 0);">Trouble-shooting</span>:&nbsp; If you
+see the following error condition, it is highly likely due to the fact
+that you have not terminate the server process that uses the same port
+- port 8100 in this example.<br>
+<br>
+<table style="width: 100%; text-align: left;" border="1" cellpadding="2"
+ cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">IO Error creating listener:
+Address already in use: JVM_Bind<br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+<span style="color: rgb(51, 51, 255);">Solution</span>: Terminate the
+previously started process that uses the same port.&nbsp; Exit the
+NetBeans IDE will do it.&nbsp; Also you can use the different port
+number other than 8100.&nbsp; In this case, you will also need to
+change the hard-coded port number of the client.<br>
+<hr style="width: 100%; height: 2px;"><br>
+<span style="color: rgb(51, 51, 255); font-weight: bold;">Solution</span>:
+This exercise up to this point is provided as a ready-to-open-and-run
+NetBeans project as part of hands-on lab zip file. You can find it as <span
+ style="font-weight: bold;">&lt;LAB_UNZIPPED_DIRECTORY&gt;/javase5concurrency/samples/</span><span
+ style="font-weight: bold;">ServerUsingExecutors</span><span
+ style="font-weight: bold;">.&nbsp;
+</span>You can just open it and run it.&nbsp; <br>
+<br>
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp; <a
+ href="http://www.javapassion.com/handsonlabs/javase5concurrency/index.html#Exercise_2">return
+to top of the
+exercise</a><br>
+<br>
+<br>
+</div>
+<h3 style="margin-left: 40px;" class="tutorial"><a name="2.2"></a>(2.2)
+Create and start a thread by implementing Runnable interface - start()
+method is in the constructor<br>
+</h3>
+<div style="margin-left: 40px;"><br>
+</div>
+<div style="margin-left: 40px;">1. Build and run the 1st instance of <span
+ style="font-weight: bold;">ConnectionClient</span>.<br>
+<ul>
+  <li>Right click <span style="font-weight: bold;">ConnectionClient </span>project
+and select <span style="font-weight: bold;">Run</span>.&nbsp;
+This will start the 1st instance of the <span
+ style="font-weight: bold;">ConnectionClient</span>.<br>
+  </li>
+  <li>Observe the result in the <span style="font-weight: bold;">Output
+    </span>window.
+(Figure-2.21 below)</li>
+</ul>
+<table style="width: 100%; text-align: left;" border="1" cellpadding="2"
+ cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">Connection established to
+server. Type characters and press &lt;ENTER&gt; to send<br>
+Type EXIT and press &lt;RETURN&gt; to exit<br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+Figure-2.21: Result of running ConnectionClient application<br>
+<ul>
+  <li>Enter some value into the Input field and press Enter key. <br>
+  </li>
+</ul>
+2. Observe the output on the server side.<br>
+<ul>
+  <li>Click the <span style="font-weight: bold;">ServerUsingThreadPoolExecutor
+    </span>tab window to see the output of the <span
+ style="font-weight: bold;">ServerUsingThreadPoolExecutor</span>.</li>
+  <li>Observe that the message it received from the 1st instance <span
+ style="font-weight: bold;">ConnectionClient </span>is displayed.</li>
+</ul>
+3. Build and run the 2nd instance of <span style="font-weight: bold;">ConnectionClient</span>.<br>
+<ul>
+  <li>Right click <span style="font-weight: bold;">ConnectionClient </span>project
+and select <span style="font-weight: bold;">Run</span>.&nbsp;
+This will start the 2nd instance of the <span
+ style="font-weight: bold;">ConnectionClient</span>.<br>
+  </li>
+  <li>Observe the result in the <span style="font-weight: bold;">Output
+    </span>window.
+(Figure-2.22 below)</li>
+</ul>
+<table style="width: 100%; text-align: left;" border="1" cellpadding="2"
+ cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">Connection established to
+server. Type characters and press &lt;ENTER&gt; to send<br>
+Type EXIT and press &lt;RETURN&gt; to exit<br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+Figure-2.22: Result of running ConnectionClient application<br>
+<br>
+4. Observe the output on the server side.<br>
+<ul>
+  <li>Click the <span style="font-weight: bold;">ServerUsingThreadPoolExecutor
+    </span>tab window to see the output of the <span
+ style="font-weight: bold;">ServerUsingThreadPoolExecutor</span>.</li>
+  <li>Observe that the message it received from the 2nd instance <span
+ style="font-weight: bold;">ConnectionClient </span>is displayed.</li>
+</ul>
+<span style="color: rgb(51, 51, 255); font-weight: bold;"></span>
+<br>
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp; <a href="#Exercise_2">return to top of the exercise</a><br>
+<br>
+</div>
+<h3 style="margin-left: 40px;" class="tutorial">Summary</h3>
+<p style="margin-left: 40px;">In this exercise, you learned how to use
+Executors utility class to create a pool of threads.<br>
+<br>
+</p>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; <a
+ href="http://www.javapassion.com/handsonlabs/javase5concurrency/index.html#Tutorial_Exercises">return
+to
+the top</a><br>
+<br>
+<br>
+<br>
+<h2><a name="Exercise_3"></a>Exercise 3: Callable and Future<br>
+</h2>
+<div style="margin-left: 40px;"><br>
+In this exercise, we will look at the use of the Callable interface and
+a Future object to allow a child thread to return a result to a parent
+thread.&nbsp; The Callable interface is similar to Runnable, in that
+both are designed for classes whose instances are potentially executed
+by another thread. A Runnable, however, does not return a result and
+cannot throw a checked exception while a Callable does.<br>
+<br>
+The Executors class contains utility methods to convert from other
+common forms to Callable classes. <br>
+</div>
+<p style="margin-left: 40px;"></p>
+<ul>
+  <ul>
+  </ul>
+  <ol>
+  </ol>
+</ul>
+<br>
+<h3 style="margin-left: 40px;" class="tutorial"><a name="3.1"></a>(3.1)
+Callable and Future<br>
+</h3>
+<br>
+<div style="margin-left: 40px;">1. Create a new NetBeans project<br>
+<ul>
+  <li>Select <span style="font-weight: bold;">File</span>-&gt;<span
+ style="font-weight: bold;">New Project (Ctrl+Shift+N)</span>. The <span
+ style="font-weight: bold;">New Project</span> dialog box appears.</li>
+  <li>Under <span style="font-weight: bold;">Choose Project</span>
+pane,
+select <span style="font-weight: bold;">General </span>under <span
+ style="font-weight: bold;">Categories </span>and <span
+ style="font-weight: bold;">Java Application</span> under <span
+ style="font-weight: bold;">Projects</span>. <br>
+  </li>
+  <li>Click <span style="font-weight: bold;">Next</span>.</li>
+</ul>
+<ul>
+  <li>Under <span style="font-weight: bold;">Name and Location</span>
+pane, for the <span style="font-weight: bold;">Project Name</span>
+field, type in <span style="font-weight: bold;"><span
+ style="color: rgb(51, 51, 255);">CallableAndFuture</span> </span>as
+project name.</li>
+  <li>For <span style="font-weight: bold;">Create Main Class</span>
+field, type in <span style="font-weight: bold;"><span
+ style="color: rgb(51, 51, 255);">CallableAndFuture</span></span>.&nbsp;
+    <br>
+  </li>
+  <li>Click <span style="font-weight: bold;">Finish</span>.</li>
+</ul>
+<img alt="" src="src/main/resources/index_files/1_concurrency14.png"
+ style="width: 729px; height: 505px;"><br>
+<ul>
+  <li>Observe that <span style="font-weight: bold;">CallableAndFuture </span>project
+appears and IDE generated <span style="font-weight: bold;">CallableAndFuture.java</span>
+is displayed in the source editor window of NetBeans IDE.</li>
+</ul>
+2. Modify the IDE generated <span style="font-weight: bold;">CallableAndFuture.java
+</span>as shown in Code-3.11 below.&nbsp; Study the code by paying
+special attention to the bold fonted parts.<br>
+<br>
+<table style="width: 100%; text-align: left;" border="1" cellpadding="2"
+ cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">import java.util.concurrent.*;<br>
+      <br>
+/**<br>
+&nbsp;*&nbsp; Demonstration of the use of a Future to return the
+results from a<br>
+&nbsp;*&nbsp; Callable.&nbsp; This shows the simplicity of
+synchronising two concurrent<br>
+&nbsp;*&nbsp; threads<br>
+&nbsp;**/<br>
+public class CallableAndFuture {<br>
+&nbsp;&nbsp;&nbsp; /**<br>
+&nbsp;&nbsp;&nbsp;&nbsp; *&nbsp; Constructor<br>
+&nbsp;&nbsp;&nbsp;&nbsp; **/<br>
+&nbsp;&nbsp;&nbsp; public CallableAndFuture() {<br>
+&nbsp;&nbsp;&nbsp; }<br>
+&nbsp;&nbsp;&nbsp; <br>
+&nbsp;&nbsp;&nbsp; /**<br>
+&nbsp;&nbsp;&nbsp;&nbsp; *&nbsp; Run the test<br>
+&nbsp;&nbsp;&nbsp;&nbsp; **/<br>
+&nbsp;&nbsp;&nbsp; public void runTest() {<br>
+&nbsp;&nbsp;&nbsp; /*&nbsp; Use the Executors utility method to get an
+ExecutorService for a<br>
+&nbsp;&nbsp;&nbsp;&nbsp; *&nbsp; separate thread of execution<br>
+&nbsp;&nbsp;&nbsp;&nbsp; */<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+ style="font-weight: bold;"> ExecutorService threadExecutor =
+Executors.newSingleThreadExecutor();</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; System.out.println("Starting
+test in first thread");<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /*&nbsp; Now attempt to run
+a task in the second thread&nbsp; */<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; try {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span
+ style="font-weight: bold;">Future&lt;String&gt; future =
+threadExecutor.submit(new CallableExample());</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /*&nbsp; Set this sleep to either 100 0r
+1000 to see the synchronisation<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; *&nbsp; effects<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; */<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Thread.sleep(1000);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+System.out.println("First thread work complete.&nbsp; Asking future for
+result");<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+String result = future.get();<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+System.out.println("Result from Future is " + result);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; } catch (Exception e) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+System.out.println("Got an exception executing the test");<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+System.out.println(e.getMessage());<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <br>
+&nbsp;&nbsp;&nbsp; /*&nbsp; Shutdown the second thread so the program
+terminates gracefully<br>
+&nbsp;&nbsp;&nbsp;&nbsp; */<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; threadExecutor.shutdown();<br>
+&nbsp;&nbsp;&nbsp; }<br>
+&nbsp;&nbsp;&nbsp; <br>
+&nbsp;&nbsp;&nbsp; /**<br>
+&nbsp;&nbsp;&nbsp;&nbsp; *&nbsp; Main entry point<br>
+&nbsp;&nbsp;&nbsp;&nbsp; *<br>
+&nbsp;&nbsp;&nbsp;&nbsp; * @param args The command line arguments<br>
+&nbsp;&nbsp;&nbsp;&nbsp; **/<br>
+&nbsp;&nbsp;&nbsp; public static void main(String[] args) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+ style="font-weight: bold;"> CallableAndFuture fe = new
+CallableAndFuture();</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; fe.runTest();<br>
+&nbsp;&nbsp;&nbsp; }<br>
+}<br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+Code-3.11: CallableAndFuture.java<br>
+<br>
+3. Write <span style="font-weight: bold;">CallableExample.java</span>
+as shown in Code-3.12 below.&nbsp; Study the
+code by paying
+special attention to the bold fonted parts.<br>
+<br>
+<table style="width: 100%; text-align: left;" border="1" cellpadding="2"
+ cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;"><span style="font-weight: bold;"></span>import
+java.net.*;<br>
+import java.io.*;<br>
+import java.util.concurrent.*;<br>
+      <br>
+/**<br>
+&nbsp;*&nbsp; A simple implementation of the Callable interface that
+can return a value<br>
+&nbsp;*&nbsp; to the thread that started it<br>
+&nbsp;**/<br>
+public class CallableExample implements Callable&lt;String&gt; {<br>
+&nbsp;&nbsp;&nbsp; /**<br>
+&nbsp;&nbsp;&nbsp;&nbsp; *&nbsp; The entry point called when this
+object is invoked as a new thread<br>
+&nbsp;&nbsp;&nbsp;&nbsp; *&nbsp; of execution<br>
+&nbsp;&nbsp;&nbsp;&nbsp; *<br>
+&nbsp;&nbsp;&nbsp;&nbsp; * @returns A String as a simple result<br>
+&nbsp;&nbsp;&nbsp;&nbsp; **/<br>
+&nbsp;&nbsp;&nbsp; public String call() {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; System.out.println("Starting
+call() method in second thread");<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; try {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Thread.sleep(500);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; } catch
+(InterruptedException ie) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; //
+Ignore<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+System.out.println("Completed call() method in second thread");<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return "Finished";<br>
+&nbsp;&nbsp;&nbsp; }<br>
+}<br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+Code-3.12: SimpleThread.java<br>
+<br>
+4. Build and run the project<br>
+<ul>
+  <li>Right click <span style="font-weight: bold;">CallableAndFuture </span>project
+and select <span style="font-weight: bold;">Run</span>. </li>
+  <li>Observe the result in the <span style="font-weight: bold;">Output
+    </span>window.
+(Figure-3.13 below)</li>
+</ul>
+<table style="width: 100%; text-align: left;" border="1" cellpadding="2"
+ cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">Starting test in first thread<br>
+Starting call() method in second thread<br>
+Completed call() method in second thread<br>
+First thread work complete.&nbsp; Asking future for result<br>
+Result from Future is Finished<br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+Figure-3.13: Result of running CallableAndFuture application<br>
+<br>
+<span style="color: rgb(51, 51, 255); font-weight: bold;">Solution</span>:
+This exercise up to this point is provided as a ready-to-open-and-run
+NetBeans project as part of hands-on lab zip file. You can find it as <span
+ style="font-weight: bold;">&lt;LAB_UNZIPPED_DIRECTORY&gt;/javase5concurrency/samples/</span><span
+ style="font-weight: bold;">CallableAndFuture</span><span
+ style="font-weight: bold;">.&nbsp;
+</span>You can just open it and run it. <br>
+<br>
+</div>
+<div style="margin-left: 40px;">&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp; <a
+ href="http://www.javapassion.com/handsonlabs/javase5concurrency/index.html#Exercise_3">return
+to top of the
+exercise</a><br>
+<br>
+</div>
+<br>
+<h3 style="margin-left: 40px;" class="tutorial">Summary</h3>
+<div style="margin-left: 40px;"><br>
+In this exercise, you looked at the use of the Callable interface and a
+Future object so that a child thread can return a result to a parent
+thread.<br>
+<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp; <a href="index.html#Tutorial_Exercises">return
+to the top</a><br>
+<br>
+<br>
+</div>
+<br>
+<h2><a name="Exercise_4"></a>Exercise 4: Semaphore<br>
+</h2>
+<div style="margin-left: 40px;"><br>
+For this exercise we will look at the use of a semaphore to restrict
+access to a fixed size pool of resources.&nbsp; Semaphores can be used
+to provide a fixed number of simultaneous accesses to a particular
+resource.<br>
+<br>
+"Conceptually, a semaphore maintains a set of permits. Each acquire()
+blocks if necessary until a permit is available, and then takes it.
+Each release() adds a permit, potentially releasing a blocking
+acquirer. However, no actual permit objects are used; the Semaphore
+just keeps a count of the number available and acts accordingly.<br>
+<br>
+Semaphores are often used to restrict the number of threads than can
+access some (physical or logical) resource."<br>
+<br>
+</div>
+<div style="margin-left: 40px;">
+<ol>
+</ol>
+<ol>
+</ol>
+</div>
+<h3 style="margin-left: 40px;" class="tutorial"><a name="4.1"></a>(4.1)
+Semaphore<br>
+</h3>
+<div style="margin-left: 40px;"><br>
+In this step, you are going to build an application that displays a
+result that is not desirable since threads are not synchronized.&nbsp; <br>
+<br>
+1. Create a new NetBeans project<br>
+<ul>
+  <li>Select <span style="font-weight: bold;">File</span>-&gt;<span
+ style="font-weight: bold;">New Project (Ctrl+Shift+N)</span>. The <span
+ style="font-weight: bold;">New Project</span> dialog box appears.</li>
+  <li>Under <span style="font-weight: bold;">Choose Project</span>
+pane,
+select <span style="font-weight: bold;">General </span>under <span
+ style="font-weight: bold;">Categories </span>and <span
+ style="font-weight: bold;">Java Application</span> under <span
+ style="font-weight: bold;">Projects</span>. <br>
+  </li>
+  <li>Click <span style="font-weight: bold;">Next</span>.</li>
+</ul>
+<ul>
+  <li>Under <span style="font-weight: bold;">Name and Location</span>
+pane, for the <span style="font-weight: bold;">Project Name</span>
+field, type in <span style="font-weight: bold;"><span
+ style="color: rgb(51, 51, 255);">SemaphoreExample</span> </span>as
+project name.</li>
+  <li>For <span style="font-weight: bold;">Create Main Class</span>
+field, type in <span style="font-weight: bold;"><span
+ style="color: rgb(51, 51, 255);">ResourseUser</span></span>.&nbsp; <br>
+  </li>
+  <li>Click <span style="font-weight: bold;">Finish</span>.</li>
+</ul>
+<img alt="" src="src/main/resources/index_files/1_concurrency15.png"
+ style="width: 729px; height: 505px;"><br>
+<ul>
+  <li>Observe that <span style="font-weight: bold;">SemaphoreExample </span>project
+appears and IDE generated <span style="font-weight: bold;">ResourseUser.java</span>
+is displayed in the source editor window of NetBeans IDE.</li>
+</ul>
+2. Modify the IDE generated <span style="font-weight: bold;">ResourseUser.java
+</span>as shown in Code-4.11 below. <br>
+<br>
+This class creates three threads that try to access the two reources in
+the pool.&nbsp; By using a semaphore to restrict access to the
+resources, this demonstrates that one of the three threads will always
+block when trying to aquire a resource.&nbsp; The threads hold a
+resource for different lengths of time to illustrate this more clearly.<br>
+<br>
+<table style="width: 100%; text-align: left;" border="1" cellpadding="2"
+ cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">/**<br>
+&nbsp;*<br>
+&nbsp;*&nbsp; Concurrency utilities (JSR-166) example<br>
+&nbsp;**/<br>
+      <br>
+import java.net.*;<br>
+import java.io.*;<br>
+import java.util.concurrent.*;<br>
+      <br>
+/**<br>
+&nbsp;*&nbsp; Use resources from a pool and return them at random times<br>
+&nbsp;**/<br>
+public class ResourceUser implements Runnable {<br>
+&nbsp;&nbsp;&nbsp; private ResourcePool pool;<br>
+&nbsp;&nbsp;&nbsp; private int threadId;<br>
+&nbsp;&nbsp;&nbsp; private int runCount;<br>
+&nbsp;&nbsp;&nbsp; private long hold;<br>
+&nbsp;&nbsp;&nbsp; private long pause;<br>
+&nbsp;&nbsp;&nbsp; <br>
+&nbsp;&nbsp;&nbsp; /**<br>
+&nbsp;&nbsp;&nbsp;&nbsp; *&nbsp; Constructor<br>
+&nbsp;&nbsp;&nbsp;&nbsp; *<br>
+&nbsp;&nbsp;&nbsp;&nbsp; * @param pool The pool to get the resource from<br>
+&nbsp;&nbsp;&nbsp;&nbsp; * @param threadId The id number of this thread<br>
+&nbsp;&nbsp;&nbsp;&nbsp; * @param runCount The number of times to run
+the test loop<br>
+&nbsp;&nbsp;&nbsp;&nbsp; * @param hold How long to hold the resource
+before releasing it<br>
+&nbsp;&nbsp;&nbsp;&nbsp; * @param pause How long to wait before trying
+to re-aquire the resource<br>
+&nbsp;&nbsp;&nbsp;&nbsp; **/<br>
+&nbsp;&nbsp;&nbsp; public ResourceUser(ResourcePool pool, int threadId,
+int runCount,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; long
+hold, long pause) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; this.pool = pool;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; this.threadId = threadId;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; this.runCount = runCount;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; this.hold = hold;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; this.pause = pause;<br>
+&nbsp;&nbsp;&nbsp; }<br>
+&nbsp;&nbsp;&nbsp; <br>
+&nbsp;&nbsp;&nbsp; /**<br>
+&nbsp;&nbsp;&nbsp;&nbsp; *&nbsp; Request a resource from the pool and<br>
+&nbsp;&nbsp;&nbsp;&nbsp; *&nbsp; return them after a random time period<br>
+&nbsp;&nbsp;&nbsp;&nbsp; **/<br>
+&nbsp;&nbsp;&nbsp; public void run() {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; for (int i = 0; i &lt;
+runCount; i++) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; try {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+/*&nbsp; Get the resource from the pool&nbsp; */<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+System.out.println("[" + threadId + "] trying to get resource");<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      <span style="font-weight: bold;">Integer resource =
+pool.getResource();</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+System.out.println("[" + threadId + "] aquired resource");<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Thread.sleep(hold);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+System.out.println("[" + threadId + "] releasing resource");<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      <span style="font-weight: bold;">pool.putResource(resource);</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Thread.sleep(pause);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }
+catch (InterruptedException ie) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+//&nbsp; Silently ignore<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }<br>
+&nbsp;&nbsp;&nbsp; }<br>
+&nbsp;&nbsp;&nbsp; <br>
+&nbsp;&nbsp;&nbsp; /**<br>
+&nbsp;&nbsp;&nbsp;&nbsp; *&nbsp; Main entry point<br>
+&nbsp;&nbsp;&nbsp;&nbsp; *<br>
+&nbsp;&nbsp;&nbsp;&nbsp; * @param args The command line arguments<br>
+&nbsp;&nbsp;&nbsp;&nbsp; **/<br>
+&nbsp;&nbsp;&nbsp; public static void main(String[] args) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /*&nbsp; Create a resource
+pool with two resources in it&nbsp; */<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ResourcePool pool = new
+ResourcePool(2);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <br>
+&nbsp;&nbsp;&nbsp; /*&nbsp; Use the Executors utility class to get a
+new FixedThreadPool.<br>
+&nbsp;&nbsp;&nbsp;&nbsp; */<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ExecutorService
+threadExecutor = Executors.newFixedThreadPool(3);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <br>
+&nbsp;&nbsp;&nbsp; /*&nbsp; Create three new resource users and start
+them using the previously<br>
+&nbsp;&nbsp;&nbsp;&nbsp; *&nbsp; initialised thread pool<br>
+&nbsp;&nbsp;&nbsp;&nbsp; */<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ResourceUser r1 = new
+ResourceUser(pool, 1, 5, 400, 500);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ResourceUser r2 = new
+ResourceUser(pool, 2, 5, 800, 500);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ResourceUser r3 = new
+ResourceUser(pool, 3, 5, 1200, 500);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; threadExecutor.execute(r1);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; threadExecutor.execute(r2);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; threadExecutor.execute(r3);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /*&nbsp; Clean up the thread
+pool so the program terminates cleanly&nbsp; */<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; threadExecutor.shutdown();<br>
+&nbsp;&nbsp;&nbsp; }<br>
+}<br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+Code-4.11: ResourseUser.java<br>
+<br>
+3. Write <span style="font-weight: bold;">ResourcePool.java</span> as
+shown in Code-4.12 below.&nbsp; <br>
+<br>
+<table style="width: 100%; text-align: left;" border="1" cellpadding="2"
+ cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;"><span style="font-weight: bold;"></span>import
+java.net.*;<br>
+import java.io.*;<br>
+import java.util.concurrent.*;<br>
+      <br>
+/**<br>
+&nbsp;*&nbsp; Use a Semaphore to control the usage of a pool of
+resources.&nbsp; If a<br>
+&nbsp;*&nbsp; consumer requests a resource when all are being used the
+consumer<br>
+&nbsp;*&nbsp; will block until a resource is returned and made
+available.<br>
+&nbsp;**/<br>
+public class ResourcePool {<br>
+&nbsp; private int poolSize;<br>
+&nbsp; <span style="font-weight: bold;">private Semaphore available;</span><br>
+&nbsp; private Integer[] resources;<br>
+&nbsp; private boolean[] used;<br>
+      <br>
+&nbsp; /**<br>
+&nbsp;&nbsp; *&nbsp; Constructor<br>
+&nbsp;&nbsp; *<br>
+&nbsp;&nbsp; * @param poolSize Size of fixed pool of resources<br>
+&nbsp;&nbsp; **/<br>
+&nbsp; public ResourcePool(int poolSize) {<br>
+&nbsp;&nbsp;&nbsp; this.poolSize = poolSize;<br>
+      <br>
+&nbsp;&nbsp;&nbsp; /*&nbsp; Create a pool of resources (for this
+example just a set of Integer<br>
+&nbsp;&nbsp;&nbsp;&nbsp; *&nbsp; objects.&nbsp; Create a new semaphore
+to control access to the resources<br>
+&nbsp;&nbsp;&nbsp;&nbsp; */<br>
+&nbsp;&nbsp;&nbsp; <span style="font-weight: bold;">available = new
+Semaphore(poolSize);</span><br>
+      <br>
+&nbsp;&nbsp;&nbsp; used = new boolean[poolSize];<br>
+&nbsp;&nbsp;&nbsp; resources = new Integer[poolSize];<br>
+      <br>
+&nbsp;&nbsp;&nbsp; for (int i = 0; i &lt; poolSize; i++)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; resources[i] = new Integer(i);<br>
+&nbsp; }<br>
+      <br>
+&nbsp; /**<br>
+&nbsp;&nbsp; *&nbsp; Get a resource.&nbsp; If all are currently being
+used this will block<br>
+&nbsp;&nbsp; *&nbsp; until one is returned to the pool.&nbsp; This is a
+synchronised method<br>
+&nbsp;&nbsp; *&nbsp; to make the code fully thread safe.<br>
+&nbsp;&nbsp; *<br>
+&nbsp;&nbsp; * @return The resource to use<br>
+&nbsp;&nbsp; **/<br>
+&nbsp; public Integer getResource() {<br>
+&nbsp;&nbsp;&nbsp; try {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="font-weight: bold;">
+available.acquire();</span><br>
+&nbsp;&nbsp;&nbsp; } catch (InterruptedException ie) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // Ignore<br>
+&nbsp;&nbsp;&nbsp; }<br>
+      <br>
+&nbsp;&nbsp;&nbsp; for (int i = 0; i &lt; poolSize; i++) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; if (used[i] == false) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; used[i] = true;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return resources[i];<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }<br>
+&nbsp;&nbsp;&nbsp; }<br>
+      <br>
+&nbsp;&nbsp;&nbsp; return null;<br>
+&nbsp; }<br>
+      <br>
+&nbsp; /**<br>
+&nbsp;&nbsp; *&nbsp; Return a resource to the pool<br>
+&nbsp;&nbsp; *<br>
+&nbsp;&nbsp; * @param resource The resource being returned to the pool<br>
+&nbsp;&nbsp; **/<br>
+&nbsp; public void putResource(Integer resource) {<br>
+&nbsp;&nbsp;&nbsp; /*&nbsp; Note use of auto-unboxing&nbsp; */<br>
+&nbsp;&nbsp;&nbsp; used[resource] = false;<br>
+&nbsp;&nbsp;&nbsp;<span style="font-weight: bold;"> available.release();</span><br>
+&nbsp; }<br>
+}<br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+Code-4.12: PrintStringsThread.java<br>
+<br>
+4. Build and run the project<br>
+<ul>
+  <li>Right click <span style="font-weight: bold;">SemaphoreExample </span>project
+and select <span style="font-weight: bold;">Run</span>. </li>
+  <li>Observe the result in the <span style="font-weight: bold;">Output
+    </span>window.
+(Figure-4.14 below)</li>
+</ul>
+<table style="width: 100%; text-align: left;" border="1" cellpadding="2"
+ cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">[1] trying to get resource<br>
+[1] aquired resource<br>
+[2] trying to get resource<br>
+[2] aquired resource<br>
+[3] trying to get resource<br>
+[1] releasing resource<br>
+[3] aquired resource<br>
+[2] releasing resource<br>
+[1] trying to get resource<br>
+[1] aquired resource<br>
+[2] trying to get resource<br>
+[1] releasing resource<br>
+[2] aquired resource<br>
+[3] releasing resource<br>
+[1] trying to get resource<br>
+[1] aquired resource<br>
+[3] trying to get resource<br>
+[2] releasing resource<br>
+[3] aquired resource<br>
+[1] releasing resource<br>
+[2] trying to get resource<br>
+[2] aquired resource<br>
+[1] trying to get resource<br>
+[3] releasing resource<br>
+[1] aquired resource<br>
+[2] releasing resource<br>
+[1] releasing resource<br>
+[3] trying to get resource<br>
+[3] aquired resource<br>
+[2] trying to get resource<br>
+[2] aquired resource<br>
+[1] trying to get resource<br>
+[2] releasing resource<br>
+[1] aquired resource<br>
+[3] releasing resource<br>
+[1] releasing resource<br>
+[2] trying to get resource<br>
+[2] aquired resource<br>
+[3] trying to get resource<br>
+[3] aquired resource<br>
+[2] releasing resource<br>
+[3] releasing resource<br>
+[3] trying to get resource<br>
+[3] aquired resource<br>
+[3] releasing resource<br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+Figure-4.14: Result of running SemaphoreExample application<br>
+<br>
+<span style="color: rgb(51, 51, 255); font-weight: bold;">Solution</span>:
+This exercise up to this point is provided as a ready-to-open-and-run
+NetBeans project as part of hands-on lab zip file. You can find it as <span
+ style="font-weight: bold;">&lt;LAB_UNZIPPED_DIRECTORY&gt;/javathreads/samples/</span><span
+ style="font-weight: bold;">SemaphoreExample</span><span
+ style="font-weight: bold;">.&nbsp;
+</span>You can just open it and run it. <br>
+<br>
+5. For your own exercise, do the following.<br>
+<br>
+Change the values used when creating the ResourceUser objects.&nbsp;
+For example make each ResourceUser hold the resource for the same
+duration.&nbsp; Recompile and run the application and see if the
+application behaves differently.<br>
+<br>
+<table style="width: 100%; text-align: left;" border="1" cellpadding="2"
+ cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">&nbsp; &nbsp; ResourceUser r1
+= new ResourceUser(pool, 1, 5, <span style="font-weight: bold;">1000</span>,
+500);<br>
+&nbsp;&nbsp;&nbsp; ResourceUser r2 = new ResourceUser(pool, 2, 5, <span
+ style="font-weight: bold;">1000</span>, 500);<br>
+&nbsp;&nbsp;&nbsp; ResourceUser r3 = new ResourceUser(pool, 3, 5, <span
+ style="font-weight: bold;">1000</span>, 500);</td>
+    </tr>
+  </tbody>
+</table>
+<br>
+<br>
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp; <a
+ href="http://www.javapassion.com/handsonlabs/javase5concurrency/index.html#Exercise_4">return
+to top of the
+exercise</a><br>
+<br>
+</div>
+<br>
+<h3 style="margin-left: 40px;" class="tutorial">Summary</h3>
+<div style="margin-left: 40px;"><br>
+In this exercise, you learned how to use a semaphore to restrict access
+to a limited number of resources.&nbsp;&nbsp; <br>
+<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;<a href="index.html#Tutorial_Exercises">
+return to the top</a><br>
+</div>
+<div style="margin-left: 40px;"><br>
+</div>
+<h2><a name="Exercise_5"></a>Exercise 5: Blocking queue<br>
+</h2>
+<br>
+<div style="margin-left: 40px;">For this exercise we will look at the
+use of a BlockingQueue to synchronize the recording of logging messages
+from a number of separate threads.<br>
+</div>
+<br>
+<h3 style="margin-left: 40px;" class="tutorial"><a name="5.1"></a>(5.1)
+Blocking queue example<br>
+</h3>
+<div style="margin-left: 40px;"><br>
+1. Create a new NetBeans project<br>
+<ul>
+  <li>Select <span style="font-weight: bold;">File</span>-&gt;<span
+ style="font-weight: bold;">New Project (Ctrl+Shift+N)</span>. The <span
+ style="font-weight: bold;">New Project</span> dialog box appears.</li>
+  <li>Under <span style="font-weight: bold;">Choose Project</span>
+pane,
+select <span style="font-weight: bold;">General </span>under <span
+ style="font-weight: bold;">Categories </span>and <span
+ style="font-weight: bold;">Java Application</span> under <span
+ style="font-weight: bold;">Projects</span>. <br>
+  </li>
+  <li>Click <span style="font-weight: bold;">Next</span>.</li>
+</ul>
+<ul>
+  <li>Under <span style="font-weight: bold;">Name and Location</span>
+pane, for the <span style="font-weight: bold;">Project Name</span>
+field, type in <span style="font-weight: bold;"><span
+ style="color: rgb(51, 51, 255);">BlockingQueueExample</span> </span>as
+project name.</li>
+  <li>For <span style="font-weight: bold;">Create Main Class</span>
+field, type in <span style="font-weight: bold;"><span
+ style="color: rgb(51, 51, 255);">BlockingQueueExample</span></span>. <br>
+  </li>
+  <li>Click <span style="font-weight: bold;">Finish</span>.</li>
+</ul>
+<img alt="" src="src/main/resources/index_files/1_concurrency16.png"
+ style="width: 729px; height: 505px;"><br>
+<ul>
+  <li>Observe that <span style="font-weight: bold;">BlockingQueueExample
+    </span>project
+appears and IDE generated <span style="font-weight: bold;">BlockingQueueExample.java</span>
+is displayed in the source editor window of NetBeans IDE.</li>
+</ul>
+2. Modify the IDE generated <span style="font-weight: bold;">BlockingQueueExample.java
+</span>as shown in Code-5.11 below. <br>
+<br>
+The <span style="font-weight: bold;">BlockingQueueExample</span> class
+creates an <span style="font-weight: bold;">ArrayBlockingQueue</span>,
+which is
+the simplest concrete implementation of the <span
+ style="font-weight: bold;">BlockingQueue
+</span>interface.&nbsp; It uses this to send messages to the <span
+ style="font-weight: bold;">Logger </span>object.<br>
+<br>
+<table style="width: 100%; text-align: left;" border="1" cellpadding="2"
+ cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">import java.net.*;<br>
+import java.io.*;<br>
+import java.util.concurrent.*;<br>
+      <br>
+/**<br>
+&nbsp;*&nbsp; Send messages to a Logger via a BlockingQueue<br>
+&nbsp;**/<br>
+public class BlockingQueueExample implements Runnable {<br>
+&nbsp;&nbsp;&nbsp; private BlockingQueue&lt;String&gt; messageQueue;<br>
+&nbsp;&nbsp;&nbsp; private int id;<br>
+&nbsp;&nbsp;&nbsp; private int count;<br>
+&nbsp;&nbsp;&nbsp; private long pause;<br>
+&nbsp;&nbsp;&nbsp; <br>
+&nbsp;&nbsp;&nbsp; /**<br>
+&nbsp;&nbsp;&nbsp;&nbsp; *&nbsp; Constructor<br>
+&nbsp;&nbsp;&nbsp;&nbsp; *<br>
+&nbsp;&nbsp;&nbsp;&nbsp; * @param messageQueue The quese to send
+messages to<br>
+&nbsp;&nbsp;&nbsp;&nbsp; * @param id The ID number of this sender<br>
+&nbsp;&nbsp;&nbsp;&nbsp; * @param count The number of messages to send<br>
+&nbsp;&nbsp;&nbsp;&nbsp; * @param pause The pause between sending each
+message<br>
+&nbsp;&nbsp;&nbsp;&nbsp; **/<br>
+&nbsp;&nbsp;&nbsp; public
+BlockingQueueExample(BlockingQueue&lt;String&gt; messageQueue, int id,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; int
+count, long pause) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; this.messageQueue =
+messageQueue;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; this.id = id;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; this.count = count;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; this.pause = pause;<br>
+&nbsp;&nbsp;&nbsp; }<br>
+&nbsp;&nbsp;&nbsp; <br>
+&nbsp;&nbsp;&nbsp; /**<br>
+&nbsp;&nbsp;&nbsp;&nbsp; *&nbsp; Run method to send the messages<br>
+&nbsp;&nbsp;&nbsp;&nbsp; **/<br>
+&nbsp;&nbsp;&nbsp; public void run() {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; try {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; for
+(int i = 0; i &lt; count; i++) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+messageQueue.put("ID " + id + ": log message number " + i);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Thread.sleep(pause);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; } catch
+(InterruptedException ie) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+//&nbsp; Ignore<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }<br>
+&nbsp;&nbsp;&nbsp; }<br>
+&nbsp;&nbsp;&nbsp; <br>
+&nbsp;&nbsp;&nbsp; /**<br>
+&nbsp;&nbsp;&nbsp;&nbsp; *&nbsp; Main entry point for running test
+scenario<br>
+&nbsp;&nbsp;&nbsp;&nbsp; *<br>
+&nbsp;&nbsp;&nbsp;&nbsp; * @param args The command line arguments<br>
+&nbsp;&nbsp;&nbsp;&nbsp; **/<br>
+&nbsp;&nbsp;&nbsp; public static void main(String[] args) {<br>
+      <br>
+&nbsp;&nbsp;<span style="font-weight: bold;">&nbsp; /*&nbsp; For the
+test we will need a BlockingQueue to be used by both threads</span><br
+ style="font-weight: bold;">
+      <span style="font-weight: bold;">&nbsp;&nbsp;&nbsp;&nbsp; *&nbsp;
+Initially use an ArrayBlockingQueue which is the simplest concrete</span><br
+ style="font-weight: bold;">
+      <span style="font-weight: bold;">&nbsp;&nbsp;&nbsp;&nbsp; *&nbsp;
+implementation of the BlockingQueue interface.&nbsp; The constructor
+takes</span><br style="font-weight: bold;">
+      <span style="font-weight: bold;">&nbsp;&nbsp;&nbsp;&nbsp; *&nbsp;
+the size of the queue as a parameter</span><br
+ style="font-weight: bold;">
+      <span style="font-weight: bold;">&nbsp;&nbsp;&nbsp;&nbsp; */</span><br
+ style="font-weight: bold;">
+      <span style="font-weight: bold;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ArrayBlockingQueue&lt;String&gt; queue = new
+ArrayBlockingQueue&lt;String&gt;(10);</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <br>
+      <span style="font-weight: bold;">&nbsp;&nbsp;&nbsp; /*&nbsp; Use
+the utility method from the Executors class to get an</span><br
+ style="font-weight: bold;">
+      <span style="font-weight: bold;">&nbsp;&nbsp;&nbsp;&nbsp; *&nbsp;
+ExcutorService reference that will allow us to execute a single</span><br
+ style="font-weight: bold;">
+      <span style="font-weight: bold;">&nbsp;&nbsp;&nbsp;&nbsp; *&nbsp;
+thread</span><br style="font-weight: bold;">
+      <span style="font-weight: bold;">&nbsp;&nbsp;&nbsp;&nbsp; */</span><br
+ style="font-weight: bold;">
+      <span style="font-weight: bold;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ExecutorService loggerExecutor = Executors.newSingleThreadExecutor();</span><br
+ style="font-weight: bold;">
+      <span style="font-weight: bold;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+loggerExecutor.execute(new Logger(queue));</span><br
+ style="font-weight: bold;">
+      <span style="font-weight: bold;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      </span><br style="font-weight: bold;">
+      <span style="font-weight: bold;">&nbsp;&nbsp;&nbsp; /*&nbsp;
+Again use the utility Executors class to get a new ExecutorService</span><br
+ style="font-weight: bold;">
+      <span style="font-weight: bold;">&nbsp;&nbsp;&nbsp;&nbsp; *&nbsp;
+for a second new thread and pass a BlockingQueueExample instance to it
+to run</span><br style="font-weight: bold;">
+      <span style="font-weight: bold;">&nbsp;&nbsp;&nbsp;&nbsp; */</span><br
+ style="font-weight: bold;">
+      <span style="font-weight: bold;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ExecutorService senderExecutor = Executors.newSingleThreadExecutor();</span><br
+ style="font-weight: bold;">
+      <span style="font-weight: bold;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+senderExecutor.execute(new BlockingQueueExample(queue, 1, 10, 500));</span><br>
+&nbsp;&nbsp;&nbsp; }<br>
+}<br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+Code-5.11: BlockingQueueExample.java<br>
+<br>
+3. Write <span style="font-weight: bold;">Logger.java</span> as
+shown in Code-5.12 below.&nbsp;
+Study the code by paying
+special attention to the bold fonted parts.<br>
+<br>
+The Logger class takes a BlockingQueue as an argument to the
+constructor to use as a queue to hold messages that need to be
+logged.&nbsp; The BlockingQueue will ensure thread safe operations when
+multiple threads are trying to add elements to the list. <br>
+<br>
+<table style="width: 100%; text-align: left;" border="1" cellpadding="2"
+ cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;"><span style="font-weight: bold;"></span>import
+java.net.*;<br>
+import java.io.*;<br>
+import java.util.concurrent.*;<br>
+      <br>
+/**<br>
+&nbsp;*&nbsp; Runnable that consumes information placed in a blocking
+queue.&nbsp; This<br>
+&nbsp;*&nbsp; demonstrates the simple synchonisation that can be
+achieved with the<br>
+&nbsp;*&nbsp; new BlockingQueue class.<br>
+&nbsp;**/<br>
+public class Logger implements Runnable {<br>
+      <br>
+&nbsp;&nbsp;&nbsp;<span style="font-weight: bold;"> private
+BlockingQueue&lt;String&gt; messageQueue;</span><br>
+&nbsp;&nbsp;&nbsp; <br>
+&nbsp;&nbsp;&nbsp; /**<br>
+&nbsp;&nbsp;&nbsp;&nbsp; *&nbsp; Constructor<br>
+&nbsp;&nbsp;&nbsp;&nbsp; *<br>
+&nbsp;&nbsp;&nbsp;&nbsp; * @param messageQueue The queue that will be
+used to pass messages<br>
+&nbsp;&nbsp;&nbsp;&nbsp; * between the two threads<br>
+&nbsp;&nbsp;&nbsp;&nbsp; **/<br>
+&nbsp;&nbsp;&nbsp; public Logger(BlockingQueue&lt;String&gt;
+messageQueue) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; this.messageQueue =
+messageQueue;<br>
+&nbsp;&nbsp;&nbsp; }<br>
+&nbsp;&nbsp;&nbsp; <br>
+&nbsp;&nbsp;&nbsp; /**<br>
+&nbsp;&nbsp;&nbsp;&nbsp; *&nbsp; Run method simply takes messages from
+the queue when they're there<br>
+&nbsp;&nbsp;&nbsp;&nbsp; *&nbsp; and pushes them to the stdout<br>
+&nbsp;&nbsp;&nbsp;&nbsp; **/<br>
+&nbsp;&nbsp;&nbsp; public void run() {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; try {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+while (true) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+System.out.println("LOG MSG: " + messageQueue.take());<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; } catch
+(InterruptedException ie) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; //
+Ignore<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }<br>
+&nbsp;&nbsp;&nbsp; }<br>
+}<br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+Code-5.12: Logger.java<br>
+<br>
+4. Build and run the project<br>
+<ul>
+  <li>Right click <span style="font-weight: bold;">BlockingQueueExample
+    </span>project
+and select <span style="font-weight: bold;">Run</span>. </li>
+  <li>Observe the result in the <span style="font-weight: bold;">Output
+    </span>window.
+(Figure-5.15 below)</li>
+</ul>
+<table style="width: 100%; text-align: left;" border="1" cellpadding="2"
+ cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">LOG MSG: ID 1: log message
+number 0<br>
+LOG MSG: ID 1: log message number 1<br>
+LOG MSG: ID 1: log message number 2<br>
+LOG MSG: ID 1: log message number 3<br>
+LOG MSG: ID 1: log message number 4<br>
+LOG MSG: ID 1: log message number 5<br>
+LOG MSG: ID 1: log message number 6<br>
+LOG MSG: ID 1: log message number 7<br>
+LOG MSG: ID 1: log message number 8<br>
+LOG MSG: ID 1: log message number 9<br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+Figure-5.15: Result of running BlockingQueueExample
+application<br>
+<br>
+<span style="color: rgb(51, 51, 255); font-weight: bold;">Solution</span>:
+This exercise up to this point is provided as a ready-to-open-and-run
+NetBeans project as part of hands-on lab zip file. You can find it as <span
+ style="font-weight: bold;">&lt;LAB_UNZIPPED_DIRECTORY&gt;/javathreads/samples/</span><span
+ style="font-weight: bold;">BlockingQueueExample</span><span
+ style="font-weight: bold;">.&nbsp;
+</span>You can just open it and run it. <br>
+<br>
+<br>
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp; <a
+ href="http://www.javapassion.com/handsonlabs/javase5concurrency/index.html#Exercise_5">return
+to top of the
+exercise</a><br>
+</div>
+<br>
+<h3 style="margin-left: 40px;" class="tutorial">(5.2) Blocking queue
+example using multiple senders</h3>
+<br>
+<div style="margin-left: 40px;">Sending messages through a single
+thread to the logger as you did in the above step is not very
+interesting.&nbsp;&nbsp; Modify the <span style="font-weight: bold;">main
+</span>method in the
+<span style="font-weight: bold;">BlockingQueueExample</span> class to
+use multiple message senders. You
+will need to make the following changes:<br>
+<ul>
+  <li>Create multiple instances of the MsgSender class with different
+identifiers and pause times</li>
+  <li>Change the Executor to a ThreadPoolExecutor to support the right
+number of threads. </li>
+  <li>Have the threads use different pauses between sending messages so
+you can see the interleaving of the different threads of execution.</li>
+</ul>
+1. Create a new NetBeans project called <span
+ style="font-weight: bold;">BlockingQueueExample2</span> by
+copying <span style="font-weight: bold;">BlockingQueueExample</span>
+project.<br>
+2. Modify the <span style="font-weight: bold;">BlockingQueueExample.java
+</span>as shown in Code-5.21 below. <br>
+<br>
+<table style="width: 100%; text-align: left;" border="1" cellpadding="2"
+ cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">import java.net.*;<br>
+import java.io.*;<br>
+import java.util.concurrent.*;<br>
+      <br>
+/**<br>
+&nbsp;*&nbsp; Send messages to a Logger via a BlockingQueue<br>
+&nbsp;**/<br>
+public class BlockingQueueExample implements Runnable {<br>
+&nbsp;&nbsp;&nbsp; private BlockingQueue&lt;String&gt; messageQueue;<br>
+&nbsp;&nbsp;&nbsp; private int id;<br>
+&nbsp;&nbsp;&nbsp; private int count;<br>
+&nbsp;&nbsp;&nbsp; private long pause;<br>
+&nbsp;&nbsp;&nbsp; <br>
+&nbsp;&nbsp;&nbsp; /**<br>
+&nbsp;&nbsp;&nbsp;&nbsp; *&nbsp; Constructor<br>
+&nbsp;&nbsp;&nbsp;&nbsp; *<br>
+&nbsp;&nbsp;&nbsp;&nbsp; * @param messageQueue The quese to send
+messages to<br>
+&nbsp;&nbsp;&nbsp;&nbsp; * @param id The ID number of this sender<br>
+&nbsp;&nbsp;&nbsp;&nbsp; * @param count The number of messages to send<br>
+&nbsp;&nbsp;&nbsp;&nbsp; * @param pause The pause between sending each
+message<br>
+&nbsp;&nbsp;&nbsp;&nbsp; **/<br>
+&nbsp;&nbsp;&nbsp; public
+BlockingQueueExample(BlockingQueue&lt;String&gt; messageQueue, int id,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; int
+count, long pause) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; this.messageQueue =
+messageQueue;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; this.id = id;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; this.count = count;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; this.pause = pause;<br>
+&nbsp;&nbsp;&nbsp; }<br>
+&nbsp;&nbsp;&nbsp; <br>
+&nbsp;&nbsp;&nbsp; /**<br>
+&nbsp;&nbsp;&nbsp;&nbsp; *&nbsp; Run method to send the messages<br>
+&nbsp;&nbsp;&nbsp;&nbsp; **/<br>
+&nbsp;&nbsp;&nbsp; public void run() {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; try {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; for
+(int i = 0; i &lt; count; i++) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+messageQueue.put("ID " + id + ": log message number " + i);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Thread.sleep(pause);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; } catch
+(InterruptedException ie) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+//&nbsp; Ignore<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }<br>
+&nbsp;&nbsp;&nbsp; }<br>
+&nbsp;&nbsp;&nbsp; <br>
+&nbsp;&nbsp;&nbsp; /**<br>
+&nbsp;&nbsp;&nbsp;&nbsp; *&nbsp; Main entry point for running test
+scenario<br>
+&nbsp;&nbsp;&nbsp;&nbsp; *<br>
+&nbsp;&nbsp;&nbsp;&nbsp; * @param args The command line arguments<br>
+&nbsp;&nbsp;&nbsp;&nbsp; **/<br>
+&nbsp;&nbsp;&nbsp; public static void main(String[] args) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <br>
+&nbsp;&nbsp;&nbsp; /*&nbsp; For the test we will need a BlockingQueue
+to be used by both threads<br>
+&nbsp;&nbsp;&nbsp;&nbsp; *&nbsp; Initially use an ArrayBlockingQueue
+which is the simplest concrete<br>
+&nbsp;&nbsp;&nbsp;&nbsp; *&nbsp; implementation of the BlockingQueue
+interface.&nbsp; The constructor takes<br>
+&nbsp;&nbsp;&nbsp;&nbsp; *&nbsp; the size of the queue as a parameter<br>
+&nbsp;&nbsp;&nbsp;&nbsp; */<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ArrayBlockingQueue&lt;String&gt; queue = new
+ArrayBlockingQueue&lt;String&gt;(10);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <br>
+&nbsp;&nbsp;&nbsp; /*&nbsp; Use the utility method from the Executors
+class to get an<br>
+&nbsp;&nbsp;&nbsp;&nbsp; *&nbsp; ExcutorService reference that will
+allow us to execute a single<br>
+&nbsp;&nbsp;&nbsp;&nbsp; *&nbsp; thread<br>
+&nbsp;&nbsp;&nbsp;&nbsp; */<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ExecutorService
+loggerExecutor = Executors.newSingleThreadExecutor();<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; loggerExecutor.execute(new
+Logger(queue));<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <br>
+&nbsp;&nbsp;&nbsp; /*&nbsp; Now create a new fixed size thread pool to
+allow us to run<br>
+&nbsp;&nbsp;&nbsp;&nbsp; *&nbsp; (in this case) three sender threads<br>
+&nbsp;&nbsp;&nbsp;&nbsp; */<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ExecutorService
+senderExecutor = Executors.newFixedThreadPool(3);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; senderExecutor.execute(new
+BlockingQueueExample(queue, 1, 5, 400));<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span
+ style="font-weight: bold;">senderExecutor.execute(new
+BlockingQueueExample(queue, 2, 5, 800));</span><br
+ style="font-weight: bold;">
+      <span style="font-weight: bold;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+senderExecutor.execute(new
+BlockingQueueExample(queue, 3, 5, 1200));</span><br>
+&nbsp;&nbsp;&nbsp; }<br>
+}<br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+Code-5.21: Modified BlockingQueueExample.java<br>
+<br>
+3. Build and run the project<br>
+<ul>
+  <li>Right click <span style="font-weight: bold;">BlockingQueueExample
+    </span>project
+and select <span style="font-weight: bold;">Run</span>. </li>
+  <li>Observe the result in the <span style="font-weight: bold;">Output
+    </span>window.
+(Figure-5.23 below)</li>
+</ul>
+<table style="width: 100%; text-align: left;" border="1" cellpadding="2"
+ cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">LOG MSG: ID 1: log message
+number 0<br>
+LOG MSG: ID 1: log message number 1<br>
+LOG MSG: ID 1: log message number 2<br>
+LOG MSG: ID 1: log message number 3<br>
+LOG MSG: ID 1: log message number 4<br>
+LOG MSG: ID 1: log message number 5<br>
+LOG MSG: ID 1: log message number 6<br>
+LOG MSG: ID 1: log message number 7<br>
+LOG MSG: ID 1: log message number 8<br>
+LOG MSG: ID 1: log message number 9<br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+Figure-5.23: Result of running BlockingQueueExample
+application<br>
+<br>
+<span style="color: rgb(51, 51, 255); font-weight: bold;">Solution</span>:
+This exercise up to this point is provided as a ready-to-open-and-run
+NetBeans project as part of hands-on lab zip file. You can find it as <span
+ style="font-weight: bold;">&lt;LAB_UNZIPPED_DIRECTORY&gt;/javathreads/samples/</span><span
+ style="font-weight: bold;">BlockingQueueExample2</span><span
+ style="font-weight: bold;">.&nbsp;
+</span>You can just open it and run it. <br>
+</div>
+<br>
+<h3 style="margin-left: 40px;" class="tutorial">Summary</h3>
+<br>
+<div style="margin-left: 40px;">For this exercise you learned how to
+use BlockingQueue to synchronize the recording of logging messages from
+a number of separate threads. <br>
+</div>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp; <a href="index.html#Tutorial_Exercises">return
+to the top</a><br>
+<br>
+<br>
+<br>
+<h2><a name="Homework"></a>Homework
+exercise (for people who
+are taking Sang Shin's "Java Programming online course")<br>
+</h2>
+<br>
+<div style="margin-left: 40px;">1. The homework is to modify the <span
+ style="font-weight: bold; color: rgb(0, 0, 0);">ServerUsingThreadPoolExecutor</span><span
+ style="color: rgb(0, 0, 0);"> project you created in Exercise 1
+above.&nbsp;&nbsp;
+(You might want to create a
+new project by copying
+the </span><span style="font-weight: bold; color: rgb(0, 0, 0);">MyServerUsingThreadPoolExecutor</span><span
+ style="color: rgb(0, 0, 0);">
+project.)&nbsp;
+You can name the new project in any way you want but here I am going to
+call to call it as </span><span
+ style="font-weight: bold; color: rgb(0, 0, 0);">MyServerUsingThreadPoolExecutor</span>.
+<br>
+<ul>
+  <li>Increase the maximum thread size to 3 (instead of 2)</li>
+  <li>Build and run 3 client instances (instead of 2)<br>
+  </li>
+</ul>
+</div>
+<div style="margin-left: 40px;">2. Send the following files to <a
+ href="mailto:javaprogramminghomework@javapassion.com">javaprogramminghomework@javapassion.com</a>
+with <span style="font-weight: bold;">Subject </span>as <span
+ style="font-weight: bold;"></span><span style="font-weight: bold;">JavaIntro-javase5concurrency.<br>
+</span>
+<ul>
+  <li>Zip file of the the<span style="font-weight: bold;">
+MyServerUsingThreadPoolExecutor</span><span style="font-weight: bold;"></span>
+NetBeans project.&nbsp; (Someone else
+should be able to open and run it as a NetBeans project.)&nbsp; You can
+use your favorite zip utility or you can use "jar" utility that comes
+with JDK as following.<br>
+  </li>
+  <ul>
+    <li>cd &lt;parent directory that contains
+MyServerUsingThreadPoolExecutor
+directory&gt;
+(assuming you named your project as MyServerUsingThreadPoolExecutor)<br>
+    </li>
+    <li>jar cvf MyServerUsingThreadPoolExecutor.zip
+MyServerUsingThreadPoolExecutor
+(MyServerUsingThreadPoolExecutor<span style="font-weight: bold;"> </span>directory
+should
+contain <span style="font-weight: bold;">nbproject </span>directory)</li>
+  </ul>
+  <li>Captured output screen&nbsp;<span style="font-weight: bold;"> </span>-
+name it as <span style="font-weight: bold;">JavaIntro-javase5concurrency.gif</span>
+or<span style="font-weight: bold;">JavaIntro-javase5concurrency</span><span
+ style="font-weight: bold;">.jpg</span> (or
+JavaIntro-javase5concurrency.&lt;whatver
+graphics format&gt;)</li>
+  <ul>
+    <li>Any screen capture that shows that your program is working is
+good enough.&nbsp; No cosmetic polishment is required.</li>
+  </ul>
+  <li>If you decide to use
+different IDE other than NetBeans, the zip
+file should contain all the files that are needed for rebuilding the
+project - war file with necessary source files is OK.</li>
+</ul>
+<span style="font-weight: bold;"></span></div>
+<br>
+<br>
+<div style="margin-left: 40px;"><br>
+</div>
+<p> </p>
+<!-- ======================================================================================== -->
+</body>
+</html>
